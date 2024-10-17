@@ -1,0 +1,81 @@
+version: '3'
+
+# Define reusable configuration blocks using anchors
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./tests:/opt/airflow/tests
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__WEBSERVER__WORKERS: "4"
+  depends_on:
+    - postgres
+
+x-airflow-common-env: &airflow-common-env
+  POSTGRES_CONNECTION_STRING: postgresql://admin:root@host.docker.internal:5433/postgres
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  webserver:
+    <<: *airflow-common
+    environment:
+      <<: *airflow-common-env
+    ports:
+      - "8080:8080"
+    command: "airflow webserver --port 8080"
+    restart: always
+
+  scheduler:
+    <<: *airflow-common
+    environment:
+      <<: *airflow-common-env
+    depends_on:
+      - postgres
+      - webserver
+    command: "airflow scheduler"
+    restart: always
+
+  init:
+    <<: *airflow-common
+    container_name: airflow_init
+    environment:
+      <<: *airflow-common-env
+    command: ["bash", "-c", "airflow db init && airflow users create --username admin --firstname admin --lastname admin --role Admin --email new_user@example.com --password admin"]
+    restart: "no"
+
+#  worker:
+#    <<: *airflow-common
+#    environment:
+#      <<: *airflow-common-env
+#    depends_on:
+#      - postgres
+#      - scheduler
+#    command: "airflow celery worker"
+#    restart: always
+
+  triggerer:
+    <<: *airflow-common
+    environment:
+      <<: *airflow-common-env
+    depends_on:
+      - postgres
+    command: "airflow triggerer"
+    restart: always
+
