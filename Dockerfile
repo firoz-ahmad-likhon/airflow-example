@@ -25,11 +25,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directories (if not created already)
-RUN mkdir -p dags tests logs
+RUN mkdir -p dags tests
 
 # Copy your local files to the container
 COPY ./dags .
 COPY ./tests .
+
+# Production stage
+FROM base AS prod
 
 # Expose the Airflow webserver port
 EXPOSE 8080
@@ -47,3 +50,9 @@ RUN pip install pytest==8.3.3 pytest-mock==3.14.0 mypy==1.11.2 ruff==0.6.9 types
 COPY .ruff.toml ./
 COPY .mypy.ini ./
 COPY pytest.ini ./
+
+# Expose the Airflow webserver port
+EXPOSE 8080
+
+# Default command (will be overridden in docker-compose for different services)
+CMD ["airflow", "webserver"]

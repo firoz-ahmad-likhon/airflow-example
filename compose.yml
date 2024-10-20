@@ -1,5 +1,3 @@
-version: '4'
-
 # Define reusable configuration blocks using anchors
 x-airflow-common: &airflow-common
   build:
