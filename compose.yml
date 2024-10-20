@@ -1,10 +1,13 @@
-version: '3'
+version: '4'
 
 # Define reusable configuration blocks using anchors
 x-airflow-common: &airflow-common
   build:
     context: .
     dockerfile: Dockerfile
+    target: ${ENV}
+  env_file:
+    - .env
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -17,12 +20,12 @@ x-airflow-common: &airflow-common
     - postgres
 
 x-airflow-common-env: &airflow-common-env
-  POSTGRES_CONNECTION_STRING: postgresql://admin:root@host.docker.internal:5433/postgres
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+  POSTGRES_CONNECTION_STRING: ${PS_CON_STR}
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_CON_STR}
 
 services:
   postgres:
-    image: postgres:13
+    image: postgres:14
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow

@@ -1,5 +1,5 @@
 # Apache Airflow image as the base
-FROM apache/airflow:2.10.2
+FROM apache/airflow:2.10.2 AS base
 
 # Set environment variables
 ENV AIRFLOW_HOME=/opt/airflow
@@ -20,22 +20,30 @@ WORKDIR /opt/airflow
 
 # Copy necessary files to the container
 COPY requirements.txt .
-COPY .ruff.toml .
-COPY .mypy.ini .
-COPY pytest.ini .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directories (if not created already)
-RUN mkdir -p /opt/airflow/dags /opt/airflow/plugins /opt/airflow/logs
+RUN mkdir -p dags tests logs
 
 # Copy your local files to the container
-COPY ./dags /opt/airflow/dags
-COPY ./tests /opt/airflow/tests
+COPY ./dags .
+COPY ./tests .
 
 # Expose the Airflow webserver port
 EXPOSE 8080
 
 # Default command (will be overridden in docker-compose for different services)
 CMD ["airflow", "webserver"]
+
+# Development stage
+FROM base AS dev
+
+# Install additional development packages
+RUN pip install pytest==8.3.3 pytest-mock==3.14.0 mypy==1.11.2 ruff==0.6.9 types-requests==2.32.0.20240914
+
+# Copy relevant configuration files for development
+COPY .ruff.toml ./
+COPY .mypy.ini ./
+COPY pytest.ini ./

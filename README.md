@@ -14,7 +14,8 @@ It is an assignment to collect Actual or estimated wind and solar power generati
 
 ## DEVELOPMENT
 1. Clone the repo.
-2. Change `POSTGRES_CONNECTION_STRING: postgresql://admin:root@host.docker.internal:5433/postgres` in docker-compose.yaml file according your postgres connection string. This the postgres where data will be synced.
+2. rename `.env-example` to `.env`
+2. Change the value of variables in `.emv` according to your requirements.
 3. Browse: `http://localhost:8080` to access the airflow UI.
 
 ## Testing
