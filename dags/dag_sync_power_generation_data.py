@@ -2,11 +2,15 @@ import logging
 import pendulum
 from typing import Any, cast
 
-from model.destination import DestinationPostgreSQL as Destination
-from model.source import SourceAPI as Source
+from airflow.exceptions import AirflowException
+from airflow.utils.edgemodifier import Label
+from airflow.utils.trigger_rule import TriggerRule
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.models import DagRun
+
+from model.destination import DestinationPostgreSQL as Destination
+from model.source import SourceAPI as Source
 from helper.api_helper import APIHelper as Helper
 from validation.parameter_validation import ParameterValidator as Validator
 
@@ -14,7 +18,7 @@ from validation.parameter_validation import ParameterValidator as Validator
 logger = logging.getLogger("airflow.task")
 
 # Default date to identify the logical DAG run
-DEFAULT_DATE = pendulum.now(tz="UTC").format('YYYY-MM-DD HH:mm')
+DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
 
 @dag(
     schedule='*/30 * * * *', # Run every 30 minutes
@@ -54,14 +58,14 @@ def power_data_sync() -> None:
             logger.error(valid.errors[-1])
             return {}
 
-    @task(task_display_name="Create destination table if it doesn't exist")
+    @task(task_display_name="Create destination table if it doesn't exist", retries=0)
     def table() -> None:
         """Create the destination table if it doesn't exist."""
         try:
             Destination().table_maintenance()
             logger.info("Table create successful")
         except Exception as e:
-            logger.critical(f"Table create failed: {e}")
+            raise AirflowException(f"Table create failed: {e}") from e
 
     @task(task_display_name="Fetch data from API")
     def fetch(p: dict[str, str]) -> dict[str, Any]:
@@ -87,25 +91,37 @@ def power_data_sync() -> None:
         return Helper.transform(data)
 
     @task(task_display_name="Sync data to destination table")
-    def sync(data: list[tuple[str, str, float]]) -> None:
+    def sync(data: list[tuple[str, str, float]]) -> bool:
         """Perform the bulk insert of the JSON data into the destination table."""
         if not data:
             logger.warning("No data to sync.")
-            return
+            return True
         try:
             Destination().bulk_sync(data)
             logger.info("Data sync successful")
 
+            return True
+
         except Exception as e:
             logger.critical(f"Data sync failed: {e}")
+            return False
+
+    @task(trigger_rule=TriggerRule.ONE_FAILED, retries=0)
+    def watcher() -> None:
+        """Raise an exception if one or more upstream tasks failed."""
+        raise AirflowException("Failing task because one or more upstream tasks failed.")
 
     # Ignore the type hinting as dag dynamically generates handle xcom
-    p = parameterize() # type: ignore
-    fetch_data = fetch(p) # type: ignore
-    data = transform(fetch_data) # type: ignore
-    sync(data) # type: ignore
+    tbl = table()
+    parameterized = parameterize() # type: ignore
+    fetched = fetch(parameterized) # type: ignore
+    transformed = transform(fetched) # type: ignore
+    synced = sync(transformed) # type: ignore
 
-    table() >> p
+    # Set up the dependencies
+    tbl >> Label("Success") >> parameterized >> Label("Success") >> fetched >> Label("Success") >> transformed >> Label("Success") >> synced
+    # If any of the tasks fail, trigger the watcher
+    [fetched, transformed, synced] >> Label("Fail") >> watcher()
 
 # Instantiate the DAG
 power_data_sync()
