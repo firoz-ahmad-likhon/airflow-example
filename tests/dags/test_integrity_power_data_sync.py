@@ -6,6 +6,7 @@ class TestPowerDataSyncDAG(IntegrityTester):
 
     def test_dag_loaded(self, power_data_sync_dag: DagBag) -> None:
         """Test if the DAG is correctly loaded."""
+        assert DagBag().import_errors == {}, "Improper import"
         assert power_data_sync_dag.id in DagBag().dags, f"DAG '{power_data_sync_dag.id}' is missing"
         assert power_data_sync_dag is not None, "DAG object is None"
         assert len(power_data_sync_dag.tasks) > 0, "No tasks in the DAG"
@@ -16,7 +17,7 @@ class TestPowerDataSyncDAG(IntegrityTester):
 
     def test_task_count(self, power_data_sync_dag: DagBag) -> None:
         """Test the number of tasks in the DAG."""
-        expected_task_count = 5
+        expected_task_count = 6
         assert len(power_data_sync_dag.tasks) == expected_task_count, f"Expected 5 tasks, but got {len(power_data_sync_dag.tasks)}"
 
     def test_task_dependencies(self, power_data_sync_dag: DagBag) -> None:
