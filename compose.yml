@@ -7,7 +7,6 @@ x-airflow-common: &airflow-common
   env_file:
     - .env
   volumes:
-    - ./airflow.cfg:/opt/airflow/airflow.cfg
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./tests:/opt/airflow/tests
@@ -80,4 +79,3 @@ services:
       - postgres
     command: "airflow triggerer"
     restart: always
-
