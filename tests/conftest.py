@@ -25,7 +25,7 @@ def parameter_validator_with_invalid_dates() -> ParameterValidator:
     """Initialize the ParameterValidator."""
     return ParameterValidator("invalid", "2024-10-16 00:30")
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_data() -> dict[str, list[dict[str, Any]]]:
     """Fixture to provide mock data for testing."""
     return {
@@ -60,7 +60,7 @@ def mock_data() -> dict[str, list[dict[str, Any]]]:
         ],
     }
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def _mock_requests_get(monkeypatch: Any, mock_data: dict[str, list[dict[str, Any]]]) -> None:
     """Monkeypatch the requests.get method to return a mock response."""
     def mock_get(url: str) -> Any:
@@ -79,7 +79,7 @@ def api_mocker(_mock_requests_get: Any) -> SourceAPI:
     return SourceAPI()
 
 @pytest.fixture(scope="session")
-def destination() -> Generator[DestinationPostgreSQL, None]:
+def destination() -> Generator[DestinationPostgreSQL, None, None]:
     """Fixture to instantiate the DestinationPostgreSQL class."""
     dest = DestinationPostgreSQL()
 
@@ -100,4 +100,3 @@ def destination() -> Generator[DestinationPostgreSQL, None]:
 
     # Drop the table after the session ends
     dest.query(f"DROP TABLE IF EXISTS {dest.TABLE_NAME};")
-

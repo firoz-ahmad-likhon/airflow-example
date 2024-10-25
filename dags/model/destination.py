@@ -39,8 +39,8 @@ class DestinationPostgreSQL(PostgresSQL):
             self.bulk_insert(f"""
                 INSERT INTO {self.TABLE_NAME} (curve_name, curve_date, value)
                 VALUES %s
-                ON CONFLICT (curve_name, curve_date)  
-                DO UPDATE SET value = EXCLUDED.value 
+                ON CONFLICT (curve_name, curve_date)
+                DO UPDATE SET value = EXCLUDED.value
             """, data)
 
         return len(data)

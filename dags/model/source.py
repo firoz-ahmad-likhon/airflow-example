@@ -1,5 +1,5 @@
 import pendulum
-import requests
+import requests  # type: ignore
 from typing import Any, cast
 from urllib.parse import quote
 
