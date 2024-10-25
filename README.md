@@ -34,7 +34,9 @@ This repo uses `pre-commit` hooks to check type and linting before committing th
 
 Perform below commands to:
 1. Type Checking
-`mypy .`
+`mypy dags\.`
+`mypy tests\.`
 2. Linting
 `ruff check .`
 
+or full scan with `pre-commit run --all-files`
