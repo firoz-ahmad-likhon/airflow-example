@@ -16,7 +16,7 @@ It is an assignment to collect Actual or estimated wind and solar power generati
 1. Clone the repo.
 2. rename `.env-example` to `.env`
 2. Change the value of variables in `.emv` according to your requirements.
-3. Browse: `http://localhost:8080` to access the airflow UI.
+3. Browse: `http://localhost:8080` to access the airflow UI. The credentials are `admin` and `admin`.
 
 ## Testing
 It is recommended to perform unit test before commiting the code. To run unit test, run the following command
