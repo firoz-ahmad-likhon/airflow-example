@@ -13,6 +13,7 @@ from model.destination import DestinationPostgreSQL as Destination
 from model.source import SourceAPI as Source
 from helper.api_helper import APIHelper as Helper
 from validation.parameter_validation import ParameterValidator as Validator
+from validation.data_validation import DataValidator
 
 # Use the Airflow task logger
 logger = logging.getLogger("airflow.task")
@@ -81,6 +82,18 @@ def power_data_sync() -> None:
             logger.critical(f"Data fetch failed: {e}")
             return {}
 
+    @task(task_display_name="Validate data before transformed")
+    def validate(data: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
+        """Validate the data before transformed."""
+        gx = DataValidator(data)
+
+        result = gx.validate()
+
+        if result["success"]:
+            return data
+        else:
+            return []
+
     @task(task_display_name="Transform data according to requirements")
     def transform(data: dict[str, Any]) -> list[tuple[str, str, float]]:
         """Transform the JSON data into a format suitable for bulk insert into the destination table."""
@@ -115,13 +128,14 @@ def power_data_sync() -> None:
     tbl = table()
     parameterized = parameterize() # type: ignore
     fetched = fetch(parameterized) # type: ignore
-    transformed = transform(fetched) # type: ignore
+    validated = validate(fetched)  # type: ignore
+    transformed = transform(validated) # type: ignore
     synced = sync(transformed) # type: ignore
 
     # Set up the dependencies
-    tbl >> Label("Success") >> parameterized >> Label("Success") >> fetched >> Label("Success") >> transformed >> Label("Success") >> synced
+    tbl >> Label("Success") >> parameterized >> Label("Success") >> fetched >> Label("Success") >> validated >> Label("Success") >> transformed >> Label("Success") >> synced
     # If any of the tasks fail, trigger the watcher
-    [fetched, transformed, synced] >> Label("Fail") >> watcher()
+    [fetched, validated, transformed,synced] >> Label("Fail") >> watcher()
 
 # Instantiate the DAG
 power_data_sync()

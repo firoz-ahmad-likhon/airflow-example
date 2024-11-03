@@ -17,7 +17,7 @@ class TestPowerDataSyncDAG(IntegrityTester):
 
     def test_task_count(self, power_data_sync_dag: DagBag) -> None:
         """Test the number of tasks in the DAG."""
-        expected_task_count = 6
+        expected_task_count = 7
         assert len(power_data_sync_dag.tasks) == expected_task_count, f"Expected 5 tasks, but got {len(power_data_sync_dag.tasks)}"
 
     def test_task_dependencies(self, power_data_sync_dag: DagBag) -> None:
@@ -26,7 +26,8 @@ class TestPowerDataSyncDAG(IntegrityTester):
         task_deps = {
             "parameterize": ["table"],
             "fetch": ["parameterize"],
-            "transform": ["fetch"],
+            "validate": ["fetch"],
+            "transform": ["validate"],
             "sync": ["transform"],
         }
 
