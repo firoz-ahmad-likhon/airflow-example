@@ -25,7 +25,7 @@ class DataValidator(Validator):
         batch = batch_definition.get_batch(batch_parameters={"dataframe": self.df})
 
         expectation = gx.expectations.ExpectTableRowCountToEqual(
-            value=5,
+            value=3,
         )
 
         return batch.validate(expectation)

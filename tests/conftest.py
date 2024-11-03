@@ -33,8 +33,6 @@ def data_validator() -> DataValidator:
         ('bmreports, Wind Onshore, min30', '2023-07-21T04:30:00Z', 640.283),
         ('bmreports, Wind Offshore, min30', '2023-07-21T04:30:00Z', 77.014),
         ('bmreports, Solar, min30', '2023-07-21T04:30:00Z', 89.0),
-        ('bmreports, Solar, min30', '2023-07-21T04:30:00Z', 89.0),
-        ('bmreports, Solar, min30', '2023-07-21T04:30:00Z', 89.0),
     ])
 
 @pytest.fixture(autouse=True)

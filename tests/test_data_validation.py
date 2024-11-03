@@ -8,8 +8,5 @@ class TestDataValidator:
         """Run the validation and check if it passes."""
         validation_result = data_validator.validate()
 
-        print(validation_result)
-
         # Assert that the validation result is successful
-        #assert validation_result["success"], "Data validation did not pass."
-        assert 1 == 2
+        assert validation_result["success"], "Data validation did not pass.my"
