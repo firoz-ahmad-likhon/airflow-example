@@ -25,11 +25,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directories (if not created already)
-RUN mkdir -p dags tests
+RUN mkdir -p dags
 
 # Copy your local files to the container
 COPY ./dags .
-COPY ./tests .
 
 # Production stage
 FROM base AS prod
@@ -45,6 +44,12 @@ FROM base AS dev
 
 # Install additional development packages
 RUN pip install pytest==8.3.3 pytest-mock==3.14.0 mypy==1.11.2 ruff==0.6.9 types-requests==2.32.0.20240914
+
+# Create directories (if not created already)
+RUN mkdir -p tests
+
+# Copy your local files to the container
+COPY ./tests .
 
 # Copy relevant configuration files for development
 COPY .ruff.toml ./
