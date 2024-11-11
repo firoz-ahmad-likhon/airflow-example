@@ -135,3 +135,5 @@ class GXInitiatorHelper:
                 cls.context.validation_definitions.get("volume"),
             ],
         ))
+
+GXInitiatorHelper.initialize()
