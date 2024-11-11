@@ -83,16 +83,16 @@ def power_data_sync() -> None:
             return {}
 
     @task(task_display_name="Validate data before transformed")
-    def validate(data: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
+    def validate(data: dict[str, Any]) -> dict[str, Any]:
         """Validate the data before transformed."""
-        gx = DataValidator(data)
+        gx = DataValidator(data["data"])
 
         result = gx.validate()
 
-        if result["success"]:
+        if result:
             return data
         else:
-            return []
+            return {}
 
     @task(task_display_name="Transform data according to requirements")
     def transform(data: dict[str, Any]) -> list[tuple[str, str, float]]:

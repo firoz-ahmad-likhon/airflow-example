@@ -1,31 +1,39 @@
+from typing import Any, cast
 import great_expectations as gx
+from great_expectations import RunIdentifier
 import pandas as pd
-import logging
 from .validator import Validator
-from great_expectations.core import ExpectationValidationResult, ExpectationSuiteValidationResult
-
+from datetime import datetime, timezone
+import logging
 
 class DataValidator(Validator):
     """Class to validate data using great_expectations library."""
 
-    def __init__(self, data: list[tuple[str, str, float]]):
+    def __init__(self, data: list[dict[str, Any]]):
         """"Initialize data validator with data."""
         try:
             self.df = pd.DataFrame(data)
         except Exception as e:
             logging.error(f"Error while converting data to pandas dataframe: {e}")
 
-    def validate(self) -> ExpectationValidationResult | ExpectationSuiteValidationResult:
+    def validate(self) -> bool:
         """"Validate data using great_expectations library."""
-        context = gx.get_context()
-        data_source = context.data_sources.add_pandas("pandas")
-        data_asset = data_source.add_dataframe_asset(name="pd dataframe asset")
+        # Get the Great Expectations context
+        context = gx.get_context(mode="file", project_root_dir="./gx")
 
-        batch_definition = data_asset.add_batch_definition_whole_dataframe("batch definition")
-        batch = batch_definition.get_batch(batch_parameters={"dataframe": self.df})
+        run_id = RunIdentifier(run_name="Quality", run_time=datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%S.%f'))
 
-        expectation = gx.expectations.ExpectTableRowCountToEqual(
-            value=3,
+        statistical_result = context.checkpoints.get("statistical_checkpoint").run(
+            batch_parameters={"dataframe": self.df}, run_id=run_id,
         )
 
-        return batch.validate(expectation)
+        completeness_result = context.checkpoints.get("completeness_checkpoint").run(
+            batch_parameters={"dataframe": self.df}, run_id=run_id,
+        )
+
+        # Build the Data Docs
+        context.build_data_docs()
+        # Print out the docs URL
+        logging.info(f"Data Docs available at: {context.get_docs_sites_urls()[0]['site_url']}")
+
+        return cast(bool, statistical_result.success and completeness_result.success)

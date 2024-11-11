@@ -3,7 +3,6 @@ from typing import Any
 from collections.abc import Generator
 from airflow.models import DagBag
 from validation.parameter_validation import ParameterValidator
-from validation.data_validation import DataValidator
 from model.source import SourceAPI
 from model.destination import DestinationPostgreSQL
 
@@ -25,15 +24,6 @@ def parameter_validator() -> ParameterValidator:
 def parameter_validator_with_invalid_dates() -> ParameterValidator:
     """Initialize the ParameterValidator."""
     return ParameterValidator("invalid", "2024-10-16 00:30")
-
-@pytest.fixture(scope='class')
-def data_validator() -> DataValidator:
-    """Initialize the ParameterValidator."""
-    return DataValidator([
-        ('bmreports, Wind Onshore, min30', '2023-07-21T04:30:00Z', 640.283),
-        ('bmreports, Wind Offshore, min30', '2023-07-21T04:30:00Z', 77.014),
-        ('bmreports, Solar, min30', '2023-07-21T04:30:00Z', 89.0),
-    ])
 
 @pytest.fixture(autouse=True)
 def mock_data() -> dict[str, list[dict[str, Any]]]:
