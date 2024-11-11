@@ -17,14 +17,13 @@ class TestPSRSyncDAG(IntegrityTester):
 
     def test_task_count(self, dag_psr_sync: DagBag) -> None:
         """Test the number of tasks in the DAG."""
-        expected_task_count = 7
+        expected_task_count = 6
         assert len(dag_psr_sync.tasks) == expected_task_count, f"Expected 5 tasks, but got {len(dag_psr_sync.tasks)}"
 
     def test_task_dependencies(self, dag_psr_sync: DagBag) -> None:
         """Test the dependencies between the tasks."""
         # Define expected upstream and downstream dependencies
         task_deps = {
-            "parameterize": ["table"],
             "fetch": ["parameterize"],
             "validate": ["fetch"],
             "transform": ["validate"],

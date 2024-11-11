@@ -59,15 +59,6 @@ def psr_sync() -> None:
             logger.error(valid.errors[-1])
             return {}
 
-    @task(task_display_name="Create destination table if it doesn't exist", retries=0)
-    def table() -> None:
-        """Create the destination table if it doesn't exist."""
-        try:
-            Destination().table_maintenance()
-            logger.info("Table create successful")
-        except Exception as e:
-            raise AirflowException(f"Table create failed: {e}") from e
-
     @task(task_display_name="Fetch data from API")
     def fetch(p: dict[str, str]) -> dict[str, Any]:
         """Fetch the JSON data from the API and push it to XCom for downstream tasks."""
@@ -75,9 +66,7 @@ def psr_sync() -> None:
             # Fetch JSON data from the API
             data = Source().fetch_json(cast(pendulum.DateTime, p["date_from"]), cast(pendulum.DateTime, p["date_to"]))
             logger.info("Data fetch successful")
-
             return data
-
         except Exception as e:
             logger.critical(f"Data fetch failed: {e}")
             return {}
@@ -105,11 +94,11 @@ def psr_sync() -> None:
             logger.warning("No data to sync.")
             return True
         try:
+            # Create the destination table if it doesn't exist.
+            Destination().table_maintenance()
             Destination().bulk_sync(data)
             logger.info("Data sync successful")
-
             return True
-
         except Exception as e:
             logger.critical(f"Data sync failed: {e}")
             return False
@@ -120,7 +109,6 @@ def psr_sync() -> None:
         raise AirflowException("Failing task because one or more upstream tasks failed.")
 
     # Ignore the type hinting as dag dynamically generates handle xcom
-    tbl = table()
     parameterized = parameterize() # type: ignore
     fetched = fetch(parameterized) # type: ignore
     validated = validate(fetched)  # type: ignore
@@ -128,7 +116,7 @@ def psr_sync() -> None:
     synced = sync(transformed) # type: ignore
 
     # Set up the dependencies
-    tbl >> Label("Success") >> parameterized >> Label("Success") >> fetched >> Label("Success") >> validated >> Label("Success") >> transformed >> Label("Success") >> synced
+    parameterized >> Label("Success") >> fetched >> Label("Success") >> validated >> Label("Success") >> transformed >> Label("Success") >> synced
     # If any of the tasks fail, trigger the watcher
     [fetched, validated, transformed,synced] >> Label("Fail") >> watcher()
 
