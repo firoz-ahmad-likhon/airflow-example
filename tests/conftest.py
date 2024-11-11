@@ -8,10 +8,10 @@ from model.destination import DestinationPostgreSQL
 
 
 @pytest.fixture(scope='class', autouse=True)
-def power_data_sync_dag() -> DagBag | Any:
+def dag_psr_sync() -> DagBag | Any:
     """Initialize the power_data_sync_dag."""
-    bag = DagBag().get_dag("power_data_sync")
-    bag.id = "power_data_sync"
+    bag = DagBag().get_dag("psr_sync")
+    bag.id = "psr_sync"
 
     return bag
 

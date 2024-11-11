@@ -36,7 +36,7 @@ DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
     },
     description='A ETL DAG for sync Actual or estimated wind and solar power generation data from API to PostgreSQL',
 )
-def power_data_sync() -> None:
+def psr_sync() -> None:
     """ETL DAG for power data."""
 
     @task(task_display_name="Parameterize the dates")
@@ -85,14 +85,9 @@ def power_data_sync() -> None:
     @task(task_display_name="Validate data before transformed")
     def validate(data: dict[str, Any]) -> dict[str, Any]:
         """Validate the data before transformed."""
-        gx = DataValidator(data["data"])
+        result = DataValidator(data["data"]).validate()
 
-        result = gx.validate()
-
-        if result:
-            return data
-        else:
-            return {}
+        return data if result else {}
 
     @task(task_display_name="Transform data according to requirements")
     def transform(data: dict[str, Any]) -> list[tuple[str, str, float]]:
@@ -138,4 +133,4 @@ def power_data_sync() -> None:
     [fetched, validated, transformed,synced] >> Label("Fail") >> watcher()
 
 # Instantiate the DAG
-power_data_sync()
+psr_sync()
