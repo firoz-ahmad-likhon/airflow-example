@@ -32,6 +32,8 @@ The test contains the following:
 ## Type Checking and Linting
 This repo uses `pre-commit` hooks to check type and linting before committing the code.
 
+Install `pre-commit` by running `pip install pre-commit` and then run `pre-commit install` to install the hooks.
+
 Perform below commands to:
 1. Type Checking
 `mypy dags\.`
