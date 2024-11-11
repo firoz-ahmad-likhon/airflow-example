@@ -6,7 +6,7 @@ import great_expectations as gx
 class GXInitiatorHelper:
     """Initialize the Great Expectations context and add data assets, suites, validation definitions and checkpoints."""
 
-    PROJECT_DIR = "./gx"
+    PROJECT_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "gx")
     SOURCE_NAME = "pandas"
     ASSET_NAME = "power"
     BATCH_NAME = "power batch"
