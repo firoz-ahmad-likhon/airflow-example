@@ -4,7 +4,7 @@ from .postgres import PostgresSQL
 class DestinationPostgreSQL(PostgresSQL):
     """The class is intended to sync the API data to PostgreSQL."""
 
-    TABLE_NAME = 'power_data'
+    TABLE_NAME = 'psr'
 
     def __init__(self) -> None:
         """Initialize class."""

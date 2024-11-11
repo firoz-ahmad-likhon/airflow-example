@@ -84,7 +84,7 @@ def destination() -> Generator[DestinationPostgreSQL, None, None]:
     dest = DestinationPostgreSQL()
 
     # Perform setup actions if needed (e.g., create table)
-    dest.TABLE_NAME = "test_power_data"
+    dest.TABLE_NAME = "test_psr"
 
     dest.query(f"""
     DROP TABLE IF EXISTS {dest.TABLE_NAME};
