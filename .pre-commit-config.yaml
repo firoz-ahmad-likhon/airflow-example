@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -22,25 +22,14 @@ repos:
 
     # Ruff
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.286
+    rev: v0.7.2
     hooks:
     -   id: ruff
         args: ["--config", "./.ruff.toml"]
 
     # Mypy
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.5.1'
+    rev: 'v1.13.0'
     hooks:
     -   id: mypy
-        #args: [--strict, --ignore-missing-imports, --disable-error-code=attr-defined, --disable-error-code=index, --no-warn-unused-ignores]
         args: ["--config-file", "./.mypy.ini"]
-
-    # pytest
-#-   repo: local
-#    hooks:
-#    -   id: pytest
-#        name: pytest
-#        entry: pytest ./tests --config-file=./pytest.ini
-#        language: system
-#        pass_filenames: false
-#        always_run: true
