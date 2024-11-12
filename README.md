@@ -29,6 +29,9 @@ The test contains the following:
 2. Unit test on the Dag tasks
 3. Unit test on every relevant function
 
+Basic test:
+Run the dag `python dags/dag_psr_sync.py`
+
 
 ## Type Checking and Linting
 This repo uses `pre-commit` hooks to check type and linting before committing the code.
