@@ -7,7 +7,7 @@ import great_expectations as gx
 class GXInitiatorHelper:
     """Initialize the Great Expectations context and add data assets, suites, validation definitions and checkpoints."""
 
-    PROJECT_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "gx")
+    GX_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "gx")
     SOURCE_NAME = "pandas"
     ASSET_NAME = "power"
     BATCH_NAME = "power batch"
@@ -15,13 +15,13 @@ class GXInitiatorHelper:
     @classmethod
     def initialize(cls, mode: str) -> None:
         """Initialize the Great Expectations context based on the provided mode."""
-        # Check mode and delete project directory if mode is recreate
-        if mode == "recreate" and os.path.exists(cls.PROJECT_DIR):
-            shutil.rmtree(cls.PROJECT_DIR)  # Delete the directory and all its contents
+        # Check mode and delete project directory if mode=recreate
+        if mode == "recreate" and os.path.exists(cls.GX_DIR):
+            shutil.rmtree(cls.GX_DIR)  # Delete the directory and all its contents
 
         # Initialize context only if the project directory does not exist
-        if not os.path.exists(cls.PROJECT_DIR):
-            cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
+        if not os.path.exists(cls.GX_DIR):
+            cls.context = gx.get_context(mode="file")
             cls.context.enable_analytics(enable=False)
             cls.add_data_assets()
             cls.add_suites_and_validation_definitions()
