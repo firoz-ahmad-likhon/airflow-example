@@ -11,6 +11,7 @@ It is an assignment to collect Actual or estimated wind and solar power generati
     - ruff installed
     - mypy installed
     - pytest installed
+    - great expectation installed
 
 ## DEVELOPMENT
 1. Clone the repo.
@@ -42,3 +43,8 @@ Perform below commands to:
 `ruff check .`
 
 or full scan with `pre-commit run --all-files`
+
+## Great Expectations
+Great Expectations already run along with airflow server. If you need to recreate it run the following command:
+
+`python ./dags/helper/gx_init_helper.py --mode recreate`

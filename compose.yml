@@ -40,7 +40,7 @@ services:
       <<: *airflow-common-env
     ports:
       - "8080:8080"
-    command: "airflow webserver --port 8080"
+    command: ["bash", "-c", "python ./dags/helper/gx_init_helper.py --mode init && airflow webserver --port 8080"]
     restart: always
 
   scheduler:

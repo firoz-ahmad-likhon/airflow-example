@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import great_expectations as gx
@@ -12,16 +13,19 @@ class GXInitiatorHelper:
     BATCH_NAME = "power batch"
 
     @classmethod
-    def initialize(cls) -> None:
-        """Initialize the Great Expectations context."""
-        # Check if the project directory exists, and delete it if it does
-        if os.path.exists(cls.PROJECT_DIR):
+    def initialize(cls, mode: str) -> None:
+        """Initialize the Great Expectations context based on the provided mode."""
+        # Check mode and delete project directory if mode is recreate
+        if mode == "recreate" and os.path.exists(cls.PROJECT_DIR):
             shutil.rmtree(cls.PROJECT_DIR)  # Delete the directory and all its contents
-        cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
-        cls.context.enable_analytics(enable=False)
-        cls.add_data_assets()
-        cls.add_suites_and_validation_definitions()
-        cls.add_checkpoint()
+
+        # Initialize context only if the project directory does not exist
+        if not os.path.exists(cls.PROJECT_DIR):
+            cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
+            cls.context.enable_analytics(enable=False)
+            cls.add_data_assets()
+            cls.add_suites_and_validation_definitions()
+            cls.add_checkpoint()
 
     @classmethod
     def add_data_assets(cls) -> None:
@@ -136,4 +140,10 @@ class GXInitiatorHelper:
             ],
         ))
 
-GXInitiatorHelper.initialize()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Initialize Great Expectations context.")
+    parser.add_argument("--mode", choices=["recreate", "init"], default="init",
+                        help="Specify whether to recreate the project directory or leave it as is.")
+    args = parser.parse_args()
+
+    GXInitiatorHelper.initialize(mode=args.mode)
