@@ -75,7 +75,10 @@ def psr_sync() -> None:
     @task(task_display_name="Validate data before transformed")
     def validate(data: dict[str, Any]) -> dict[str, Any]:
         """Validate the data before transformed."""
-        result = DataValidator(data["data"]).validate()
+        quality = DataValidator(data["data"])
+        result = quality.validate()
+        # Generate documentation
+        quality.doc()
 
         return data if result else {}
 
