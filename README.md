@@ -50,4 +50,4 @@ or full scan with `pre-commit run --all-files`
 ## Great Expectations
 Great Expectations already run along with airflow server. If you need to recreate it run the following command:
 
-`python ./dags/helper/gx_init_helper.py --mode recreate`
+`python ./quality/gx_init.py --mode recreate`

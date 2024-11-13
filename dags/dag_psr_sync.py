@@ -21,6 +21,7 @@ logger = logging.getLogger("airflow.task")
 # Default date to identify the logical DAG run
 DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
 
+
 @dag(
     schedule='*/30 * * * *', # Run every 30 minutes
     start_date=pendulum.datetime(2024, 10, 13, 10, 45, 0, tz="UTC"),

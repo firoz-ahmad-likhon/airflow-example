@@ -4,13 +4,15 @@ import shutil
 import great_expectations as gx
 
 
-class GXInitiatorHelper:
+class GXInitiator:
     """Initialize the Great Expectations context and add data assets, suites, validation definitions and checkpoints."""
 
-    GX_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "gx")
+    # Define constants
+    PROJECT_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "quality")
+    GX_DIR = os.path.join(PROJECT_DIR, "gx")
     SOURCE_NAME = "pandas"
-    ASSET_NAME = "power"
-    BATCH_NAME = "power batch"
+    ASSET_NAME = "psr"
+    BATCH_NAME = "psr batch"
 
     @classmethod
     def initialize(cls, mode: str) -> None:
@@ -21,7 +23,7 @@ class GXInitiatorHelper:
 
         # Initialize context only if the project directory does not exist
         if not os.path.exists(cls.GX_DIR):
-            cls.context = gx.get_context(mode="file")
+            cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
             cls.context.enable_analytics(enable=False)
             cls.add_data_assets()
             cls.add_suites_and_validation_definitions()
@@ -104,7 +106,7 @@ class GXInitiatorHelper:
 
         # Add expectations to the suite
         suite.add_expectation(
-            gx.expectations.ExpectTableRowCountToEqual(value=3),
+            gx.expectations.ExpectTableRowCountToBeBetween(min_value=0, max_value=1008),
         )
 
         # Create a Validation Definition and Add to the Data Context
@@ -146,4 +148,4 @@ if __name__ == "__main__":
                         help="Specify whether to recreate the project directory or leave it as is.")
     args = parser.parse_args()
 
-    GXInitiatorHelper.initialize(mode=args.mode)
+    GXInitiator.initialize(mode=args.mode)

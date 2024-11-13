@@ -25,10 +25,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directories (if not created already)
-RUN mkdir -p dags
+RUN mkdir -p dags quality
 
 # Copy your local files to the container
 COPY ./dags ./dags
+COPY ./quality ./quality
 
 # Production stage
 FROM base AS prod

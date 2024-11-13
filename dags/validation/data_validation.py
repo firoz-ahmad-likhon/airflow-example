@@ -1,9 +1,10 @@
+import os
 from typing import Any, cast
 import great_expectations as gx
+import pendulum
 from great_expectations import RunIdentifier
 import pandas as pd
 from .validator import Validator
-from datetime import datetime, timezone
 import logging
 
 class DataValidator(Validator):
@@ -18,15 +19,17 @@ class DataValidator(Validator):
 
     def validate(self) -> bool:
         """"Validate data using great_expectations library."""
+        # Define the project directory
+        project_dir = os.path.join(os.environ['AIRFLOW_HOME'], "quality")
         # Get the Great Expectations context
-        context = gx.get_context(mode="file", project_root_dir="./gx")
-
-        run_id = RunIdentifier(run_name="Quality", run_time=datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%S.%f'))
-
+        context = gx.get_context(mode="file", project_root_dir=project_dir)
+        # Define the run name and time.
+        run_id = RunIdentifier(run_name="Quality", run_time=pendulum.now('UTC').strftime('%Y%m%dT%H%M%S.%f'))
+        # Run the statistical checkpoints
         statistical_result = context.checkpoints.get("statistical_checkpoint").run(
             batch_parameters={"dataframe": self.df}, run_id=run_id,
         )
-
+        # Run the completeness checkpoints
         completeness_result = context.checkpoints.get("completeness_checkpoint").run(
             batch_parameters={"dataframe": self.df}, run_id=run_id,
         )
