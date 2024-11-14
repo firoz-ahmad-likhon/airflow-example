@@ -40,6 +40,7 @@ Install `pre-commit` by running `pip install pre-commit` and then run `pre-commi
 
 Perform below commands to:
 1. Type Checking
+`mypy . --pdb`
 `mypy dags\.`
 `mypy tests\.`
 2. Linting
@@ -48,6 +49,6 @@ Perform below commands to:
 or full scan with `pre-commit run --all-files`
 
 ## Great Expectations
-Great Expectations already run along with airflow server. If you need to recreate it run the following command:
+Great Expectations already run along with airflow server. If you need to recreate (For example, if you have changed the init file) it run the following command:
 
 `python ./quality/gx_init.py --mode recreate`
