@@ -11,7 +11,10 @@ class DataValidator(Validator):
     """Class to validate data using great_expectations library."""
 
     def __init__(self, data: list[dict[str, Any]]):
-        """"Initialize data validator with data."""
+        """"Initialize data validator with data.
+
+        :param data: List of dictionaries containing data to be validated.
+        """
         try:
             self.df = pd.DataFrame(data)
         except Exception as e:

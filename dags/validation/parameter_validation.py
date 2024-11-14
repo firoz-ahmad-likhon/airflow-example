@@ -10,7 +10,11 @@ class ParameterValidator(Validator):
     """
 
     def __init__(self, date_from: str, date_to: str):
-        """Initialize the class with the date_from and date_to parameters."""
+        """Initialize the class with the date_from and date_to parameters.
+
+        :param date_from: The start date time of the time period.
+        :param date_to: The end date time of the time period.
+        """
         self.errors: list[str] = []
 
         try:
@@ -44,7 +48,10 @@ class ParameterValidator(Validator):
         return True
 
     def validate_days_range(self, max_days: int = 7) -> bool:
-        """Check the date range is within the allowed limit (7 days)."""
+        """Check the date range is within the allowed limit.
+
+        :param max_days: The maximum number of days allowed. Default is 7.
+        """
         if self.date_to.diff(self.date_from).in_days() > max_days:
             self.errors.append(f"Date range should not exceed {max_days} days.")
 

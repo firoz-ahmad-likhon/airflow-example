@@ -19,6 +19,7 @@ class APIHelper:
     def date_param(dt: datetime) -> pendulum.DateTime:
         """Get the start datetime for data collection.
 
+        :param dt: datetime to be converted to nearest 30 minutes
         :return: datetime
         """
         dt = pendulum.instance(dt)

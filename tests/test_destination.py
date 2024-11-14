@@ -4,7 +4,10 @@ class TestDestination:
     """Test the Destination class."""
 
     def test_bulk_sync(self, destination: DestinationPostgreSQL) -> None:
-        """Test bulk_sync method to insert data into the database."""
+        """Test bulk_sync method to insert data into the database.
+
+        :param destination: The destination object from fixture.
+        """
         data = [
             ('bmreports, Wind Onshore, min30', '2023-07-21T04:30:00Z', 640.283),
             ('bmreports, Wind Offshore, min30', '2023-07-21T04:30:00Z', 77.014),
@@ -18,7 +21,10 @@ class TestDestination:
         assert inserted_count == len(data), "Not all data was inserted"
 
     def test_bulk_sync_conflict_resolution(self, destination: DestinationPostgreSQL) -> None:
-        """Test conflict resolution when inserting data into the database."""
+        """Test conflict resolution when inserting data into the database.
+
+        :param destination: The destination object from fixture.
+        """
         data = [
             ('bmreports, Wind Onshore, min30', '2023-07-21T04:30:00Z', 740.283),
             ('bmreports, Wind Offshore, min30', '2023-07-21T04:30:00Z', 87.014),

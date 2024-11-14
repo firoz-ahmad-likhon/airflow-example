@@ -32,7 +32,7 @@ class DestinationPostgreSQL(PostgresSQL):
     def bulk_sync(self, data: list[tuple[str, str, float]]) -> int:
         """Insert data into the database.
 
-        @param data: data
+        @param data: data to be inserted
         """
         if data:
             # self.bulk_insert(f'INSERT INTO {self.TABLE_NAME} (curve_name, date, value) VALUES %s', data)

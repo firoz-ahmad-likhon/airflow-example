@@ -16,7 +16,14 @@ class GXInitiator:
 
     @classmethod
     def initialize(cls, mode: str) -> None:
-        """Initialize the Great Expectations context based on the provided mode."""
+        """Initialize the Great Expectations context based on the provided mode.
+
+        Args:
+            mode (str): Mode for initializing the context. It can be either:
+                - 'recreate': To re-initialize the context.
+                - 'init': To initialize a new context.
+
+        """
         # Check mode and delete project directory if mode=recreate
         if mode == "recreate" and os.path.exists(cls.GX_DIR):
             shutil.rmtree(cls.GX_DIR)  # Delete the directory and all its contents
