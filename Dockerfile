@@ -1,9 +1,6 @@
 # Apache Airflow image as the base
 FROM apache/airflow:2.10.2 AS base
 
-# Set environment variables
-ENV AIRFLOW_HOME=/opt/airflow
-
 # Switch to root user to install additional packages
 USER root
 
