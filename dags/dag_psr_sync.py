@@ -5,7 +5,7 @@ from typing import Any, cast
 from airflow.exceptions import AirflowException
 from airflow.utils.edgemodifier import Label
 from airflow.utils.trigger_rule import TriggerRule
-from airflow.decorators import dag, task
+from airflow.decorators import dag, task, task_group
 from airflow.models.param import Param
 from airflow.models import DagRun
 
@@ -23,12 +23,12 @@ DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
 
 
 @dag(
-    schedule='*/30 * * * *', # Run every 30 minutes
+    schedule='*/30 * * * *',  # Run every 30 minutes
     start_date=pendulum.datetime(2024, 10, 13, 10, 45, 0, tz="UTC"),
     catchup=False,
     tags=['half hourly'],
     default_args={
-        'retries': 2,
+        'retries': 1,
         'retry_delay': pendulum.duration(minutes=5),
     },
     params={
@@ -40,7 +40,7 @@ DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
 def psr_sync() -> None:
     """ETL DAG for power data."""
 
-    @task(task_display_name="Parameterize the dates")
+    @task(task_display_name="Parameterize the dates", retries=0)
     def parameterize(params: dict[str, Any], dag_run: DagRun) -> dict[str, Any]:
         """Validate the dates and return valid dates or raise an exception."""
         # Get the user inputs or system generated DAG run date
@@ -55,74 +55,77 @@ def psr_sync() -> None:
         # Validate the user inputs
         valid = Validator(date_from, date_to)
         if valid.validate():
-            return {"date_from": Helper.floored_to_30_min(valid.date_from), "date_to": Helper.floored_to_30_min(valid.date_to)}
+            return {"date_from": Helper.floored_to_30_min(valid.date_from),
+                    "date_to": Helper.floored_to_30_min(valid.date_to)}
         else:
-            logger.error(valid.errors[-1])
-            return {}
+            raise AirflowException(valid.errors[-1])
 
-    @task(task_display_name="Fetch data from API")
-    def fetch(p: dict[str, str]) -> dict[str, Any]:
-        """Fetch the JSON data from the API and push it to XCom for downstream tasks."""
-        try:
-            # Fetch JSON data from the API
-            data = Source().fetch_json(cast(pendulum.DateTime, p["date_from"]), cast(pendulum.DateTime, p["date_to"]))
-            logger.info("Data fetch successful")
-            return data
-        except Exception as e:
-            logger.critical(f"Data fetch failed: {e}")
-            return {}
+    @task_group(group_id="Processor", tooltip="Data processing unit")
+    def source(parameters: dict[str, str]) -> Any:
+        """Tasks group for processing source data."""
+        @task(task_display_name="Fetcher")
+        def fetch(p: dict[str, str]) -> dict[str, Any]:
+            """Fetch the JSON data from the API and push it to XCom for downstream tasks."""
+            try:
+                data = Source().fetch_json(cast(pendulum.DateTime, p["date_from"]), cast(pendulum.DateTime, p["date_to"]))
 
-    @task(task_display_name="Validate data before transformed")
-    def validate(data: dict[str, Any]) -> dict[str, Any]:
-        """Validate the data before transformed."""
-        quality = DataValidator(data["data"])
-        result = quality.validate()
-        # Generate documentation
-        quality.doc()
+                if not data["data"]:
+                    raise AirflowException("Data is empty")
+                logger.info("Data fetch successful")
+                return data
+            except Exception as e:
+                raise AirflowException(f"Data fetch failed: {e}") from e
 
-        return data if result else {}
+        @task(task_display_name="Validator")
+        def validate(data: dict[str, Any]) -> dict[str, Any]:
+            """Validate the data before transformation."""
+            q = DataValidator(data["data"])
+            result = q.validate()
+            q.doc()  # Generate documentation
 
-    @task(task_display_name="Transform data according to requirements")
-    def transform(data: dict[str, Any]) -> list[tuple[str, str, float]]:
-        """Transform the JSON data into a format suitable for bulk insert into the destination table."""
-        if not data:
-            logger.warning("No data to transform.")
-            return []
+            if result:
+                logger.info("Data validation successful")
+                return data
+            else:
+                raise AirflowException("Data validation failed")
 
-        return Helper.transform(data)
+        @task(task_display_name="Transformer")
+        def transform(data: dict[str, Any]) -> list[tuple[str, str, float]]:
+            """Transform the JSON data into a format suitable for bulk insert into the destination table."""
+            return Helper.transform(data)
+
+        fetched_data = fetch(parameters)
+        validated_data = validate(cast(dict[str, Any], fetched_data))
+        transformed_data = transform(cast(dict[str, Any], validated_data))
+
+        fetched_data >> Label("Fetched data from API") >> validated_data >> Label("Validated data") >> transformed_data >> Label("Transformed data")
+
+        return transformed_data
 
     @task(task_display_name="Sync data to destination table")
     def sync(data: list[tuple[str, str, float]]) -> bool:
         """Perform the bulk insert of the JSON data into the destination table."""
-        if not data:
-            logger.warning("No data to sync.")
-            return True
         try:
-            # Create the destination table if it doesn't exist.
-            Destination().table_maintenance()
+            Destination().table_maintenance()  # Create the destination table if it doesn't exist.
             Destination().bulk_sync(data)
             logger.info("Data sync successful")
             return True
         except Exception as e:
-            logger.critical(f"Data sync failed: {e}")
-            return False
+            raise AirflowException(f"Data sync failed: {e}") from e
 
     @task(trigger_rule=TriggerRule.ONE_FAILED, retries=0)
     def watcher() -> None:
         """Raise an exception if one or more upstream tasks failed."""
         raise AirflowException("Failing task because one or more upstream tasks failed.")
 
-    # Ignore the type hinting as dag dynamically generates handle xcom
-    parameterized = parameterize() # type: ignore
-    fetched = fetch(parameterized) # type: ignore
-    validated = validate(fetched)  # type: ignore
-    transformed = transform(validated) # type: ignore
-    synced = sync(transformed) # type: ignore
+    # Set up dependencies for TaskGroups and tasks
+    parameterized = parameterize()  # type: ignore
+    fetched = source(cast(dict[str, str], parameterized))
+    synced = sync(cast(list[tuple[str, str, float]], fetched))
 
-    # Set up the dependencies
-    parameterized >> Label("Success") >> fetched >> Label("Success") >> validated >> Label("Success") >> transformed >> Label("Success") >> synced
-    # If any of the tasks fail, trigger the watcher
-    [fetched, validated, transformed,synced] >> Label("Fail") >> watcher()
+    fetched >> Label("Transformed data") >> synced
+
+    [parameterized, fetched, synced] >> Label("Fail") >> watcher()
 
 # Instantiate the DAG
 psr_sync()
