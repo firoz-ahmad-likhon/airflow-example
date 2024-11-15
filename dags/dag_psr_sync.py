@@ -38,7 +38,7 @@ DEFAULT_DATE = pendulum.now(tz="UTC").to_iso8601_string()
     description='A ETL DAG for sync Actual or estimated wind and solar power generation data from API to PostgreSQL',
 )
 def psr_sync() -> None:
-    """ETL DAG for power data."""
+    """ETL DAG for psr data."""
 
     @task(task_display_name="Parameterize the dates", retries=0)
     def parameterize(params: dict[str, Any], dag_run: DagRun) -> dict[str, Any]:

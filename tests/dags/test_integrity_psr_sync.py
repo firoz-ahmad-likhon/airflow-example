@@ -24,10 +24,10 @@ class TestPSRSyncDAG(IntegrityTester):
         """Test the dependencies between the tasks."""
         # Define expected upstream and downstream dependencies
         task_deps = {
-            "fetch": ["parameterize"],
-            "validate": ["fetch"],
-            "transform": ["validate"],
-            "sync": ["transform"],
+            "Processor.fetch": ["parameterize"],
+            "Processor.validate": ["Processor.fetch"],
+            "Processor.transform": ["Processor.validate"],
+            "sync": ["Processor.transform"],
         }
 
         for task_id, upstream_ids in task_deps.items():
