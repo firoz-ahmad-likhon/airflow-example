@@ -81,7 +81,6 @@ def psr_sync() -> None:
             """Validate the data before transformation."""
             q = DataValidator(data["data"])
             result = q.validate()
-            q.doc()  # Generate documentation
 
             if result:
                 logger.info("Data validation successful")

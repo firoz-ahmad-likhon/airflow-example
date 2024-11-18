@@ -13,6 +13,11 @@ class GXInitiator:
     SOURCE_NAME = "pandas"
     ASSET_NAME = "psr"
     BATCH_NAME = "psr batch"
+    ACTIONS = [
+        gx.checkpoint.actions.UpdateDataDocsAction(
+            name="Automatically data docs generation",
+        ),
+    ]
 
     @classmethod
     def initialize(cls, mode: str) -> None:
@@ -32,9 +37,22 @@ class GXInitiator:
         if not os.path.exists(cls.GX_DIR):
             cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
             cls.context.enable_analytics(enable=False)
+            cls.add_validation_results_store_backend()
             cls.add_data_assets()
             cls.add_suites_and_validation_definitions()
             cls.add_checkpoint()
+
+    @classmethod
+    def add_validation_results_store_backend(cls) -> None:
+        """Configure a database store for storing validation results."""
+        cls.context.add_store("validation_results_store", {
+            "class_name": "ValidationResultsStore",
+            "store_backend": {
+                "class_name": "DatabaseStoreBackend",
+                "url": os.environ['GX_POSTGRES_CONNECTION_STRING'],
+                "table_name": os.environ['GX_TABLE_NAME'],
+            },
+        })
 
     @classmethod
     def add_data_assets(cls) -> None:
@@ -135,6 +153,7 @@ class GXInitiator:
             validation_definitions=[
                 cls.context.validation_definitions.get("distribution"),
             ],
+            actions=cls.ACTIONS,
         ))
 
     @classmethod
@@ -147,6 +166,7 @@ class GXInitiator:
                 cls.context.validation_definitions.get("schema"),
                 cls.context.validation_definitions.get("volume"),
             ],
+            actions=cls.ACTIONS,
         ))
 
 if __name__ == "__main__":
