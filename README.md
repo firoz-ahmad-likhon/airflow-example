@@ -27,6 +27,14 @@ The test contains the following:
 Basic test:
 Run the dag `python dags/dag_psr_sync.py`
 
+Debugging:
+Change the dag call `psr_sync()` to
+```
+if __name__ == "__main__":
+    psr_sync().test()
+```
+and then run `python dags/dag_psr_sync.py`
+
 
 ## Type Checking and Linting
 This repo uses `pre-commit` hooks to check type and linting before committing the code.
