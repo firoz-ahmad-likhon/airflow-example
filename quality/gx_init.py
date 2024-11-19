@@ -48,7 +48,7 @@ class GXInitiator:
 
     @classmethod
     def add_data_docs_site(cls) -> None:
-        """Add transactions data docs site to the data context."""
+        """Add ingestion time data docs site to the data context."""
         cls.context.add_data_docs_site(
             site_name=cls.INGESTION_TIME_SITE_NAME,
             site_config={
