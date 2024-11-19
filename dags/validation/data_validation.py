@@ -28,7 +28,7 @@ class DataValidator(Validator):
     def validate(self) -> bool:
         """"Validate data using great_expectations library."""
         # Define the run name and time.
-        run_id = RunIdentifier(run_name="Quality", run_time=pendulum.now('UTC').strftime('%Y%m%dT%H%M%S.%f'))
+        run_id = RunIdentifier(run_name="Ingestion time scan", run_time=pendulum.now('UTC').strftime('%Y%m%dT%H%M%S.%f'))
         # Run the statistical checkpoints
         statistical_result = self.context.checkpoints.get("statistical_checkpoint").run(
             batch_parameters={"dataframe": self.df}, run_id=run_id,
