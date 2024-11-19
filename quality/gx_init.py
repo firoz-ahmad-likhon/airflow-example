@@ -13,8 +13,8 @@ class GXInitiator:
     SOURCE_NAME = "pandas"
     ASSET_NAME = "psr"
     BATCH_NAME = "psr batch"
-    DOC_BASE_DIR = "uncommitted/data_docs/transactions_docs/"
     INGESTION_TIME_SITE_NAME = "ingestion_time_site"
+    DOC_BASE_DIR_INGESTION_TIME = "uncommitted/data_docs/" + INGESTION_TIME_SITE_NAME + "/"
     ACTIONS = [
         gx.checkpoint.actions.UpdateDataDocsAction(
             name="Automatically data docs generation",
@@ -58,7 +58,7 @@ class GXInitiator:
                 },
                 "store_backend": {
                     "class_name": "TupleFilesystemStoreBackend",
-                    "base_directory": cls.DOC_BASE_DIR,
+                    "base_directory": cls.DOC_BASE_DIR_INGESTION_TIME,
                 },
             },
         )
