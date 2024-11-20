@@ -7,7 +7,7 @@ from model.source import SourceAPI
 from model.destination import DestinationPostgreSQL
 
 
-@pytest.fixture(scope='class', autouse=True)
+@pytest.fixture(scope='class')
 def dag_psr_sync() -> DagBag | Any:
     """Initialize the power_data_sync_dag."""
     bag = DagBag().get_dag("psr_sync")
@@ -15,12 +15,12 @@ def dag_psr_sync() -> DagBag | Any:
 
     return bag
 
-@pytest.fixture(scope='class', autouse=True)
+@pytest.fixture(scope='class')
 def parameter_validator() -> ParameterValidator:
     """Initialize the ParameterValidator."""
     return ParameterValidator("2024-10-15 00:00", "2024-10-16 00:30")
 
-@pytest.fixture(scope='class', autouse=True)
+@pytest.fixture(scope='class')
 def parameter_validator_with_invalid_dates() -> ParameterValidator:
     """Initialize the ParameterValidator."""
     return ParameterValidator("invalid", "2024-10-16 00:30")
@@ -60,7 +60,7 @@ def mock_data() -> dict[str, list[dict[str, Any]]]:
         ],
     }
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def _mock_requests_get(monkeypatch: Any, mock_data: dict[str, list[dict[str, Any]]]) -> None:
     """Monkeypatch the requests.get() method to return a mock response.
 
@@ -78,7 +78,7 @@ def _mock_requests_get(monkeypatch: Any, mock_data: dict[str, list[dict[str, Any
 
     monkeypatch.setattr("requests.get", mock_get)
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def api_mocker(_mock_requests_get: Any) -> SourceAPI:
     """Instantiate the SourceAPI with monkey patch.
 
