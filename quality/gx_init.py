@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+from pathlib import Path
 import great_expectations as gx
 
 
@@ -8,8 +9,8 @@ class GXInitiator:
     """Initialize the Great Expectations context and add data assets, suites, validation definitions and checkpoints."""
 
     # Define constants
-    PROJECT_DIR = os.path.join(os.environ['AIRFLOW_HOME'], "quality")
-    GX_DIR = os.path.join(PROJECT_DIR, "gx")
+    PROJECT_DIR: Path = Path(os.environ['AIRFLOW_HOME']) / "quality"
+    GX_DIR: Path = PROJECT_DIR / "gx"
     SOURCE_NAME = "pandas"
     ASSET_NAME = "psr"
     BATCH_NAME = "psr batch"
@@ -20,6 +21,7 @@ class GXInitiator:
             name="Automatically data docs generation",
             site_names=[INGESTION_TIME_SITE_NAME],
         ),
+        # Add more actions here if needed
     ]
 
     @classmethod
@@ -41,7 +43,7 @@ class GXInitiator:
             cls.context = gx.get_context(mode="file", project_root_dir=cls.PROJECT_DIR)
             cls.context.enable_analytics(enable=False)
             cls.add_data_docs_site()
-            cls.add_validation_results_store_backend()
+            cls.add_validation_results_store_backend()  # Comment out if you don't want to store validation results in a database
             cls.add_data_assets()
             cls.add_suites_and_validation_definitions()
             cls.add_checkpoint()
@@ -81,7 +83,7 @@ class GXInitiator:
         # Add a pandas datasource
         data_source = cls.context.data_sources.add_pandas(name=cls.SOURCE_NAME)
 
-        # Add a DataFrame asset for power
+        # Add a DataFrame asset for psr
         data_asset = data_source.add_dataframe_asset(name=cls.ASSET_NAME)
 
         # Add a Batch Definition to the Data Asset
