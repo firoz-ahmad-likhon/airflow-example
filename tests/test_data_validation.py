@@ -10,4 +10,4 @@ class TestDataValidator:
 
         :param mock_data: Mock data from fixture.
         """
-        assert DataValidator(mock_data["data"]).validate(), "Data validation did not pass.my"
+        assert DataValidator(mock_data["data"]).validate(), "Data validation did not pass"
