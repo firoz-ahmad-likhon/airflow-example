@@ -1,5 +1,6 @@
 from model.destination import DestinationPostgreSQL
 
+
 class TestDestination:
     """Test the Destination class."""
 

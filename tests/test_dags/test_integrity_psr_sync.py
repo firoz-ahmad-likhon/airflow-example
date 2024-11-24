@@ -1,5 +1,6 @@
-from integrity_tester import IntegrityTester
+from .integrity_tester import IntegrityTester
 from airflow.models import DagBag
+
 
 class TestPSRSyncDAG(IntegrityTester):
     """Test the psr_sync DAG."""

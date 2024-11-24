@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from airflow.models import DagBag
 
+
 class IntegrityTester(ABC):
     """Abstract class for integrity test."""
 

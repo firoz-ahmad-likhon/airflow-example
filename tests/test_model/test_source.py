@@ -1,6 +1,7 @@
 import pendulum
 from model.source import SourceAPI
 
+
 class TestSourceAPI:
     """Test class for SourceAPI."""
 

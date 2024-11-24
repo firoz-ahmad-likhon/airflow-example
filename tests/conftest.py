@@ -1,31 +1,9 @@
 import pytest
 from typing import Any
 from collections.abc import Generator
-from airflow.models import DagBag
-from validation.parameter_validation import ParameterValidator
-from model.source import SourceAPI
 from model.destination import DestinationPostgreSQL
 
-
-@pytest.fixture(scope='class')
-def dag_psr_sync() -> DagBag | Any:
-    """Initialize the power_data_sync_dag."""
-    bag = DagBag().get_dag("psr_sync")
-    bag.id = "psr_sync"
-
-    return bag
-
-@pytest.fixture(scope='class')
-def parameter_validator() -> ParameterValidator:
-    """Initialize the ParameterValidator."""
-    return ParameterValidator("2024-10-15 00:00", "2024-10-16 00:30")
-
-@pytest.fixture(scope='class')
-def parameter_validator_with_invalid_dates() -> ParameterValidator:
-    """Initialize the ParameterValidator."""
-    return ParameterValidator("invalid", "2024-10-16 00:30")
-
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="session")
 def mock_data() -> dict[str, list[dict[str, Any]]]:
     """Fixture to provide mock data for testing."""
     return {
@@ -59,33 +37,6 @@ def mock_data() -> dict[str, list[dict[str, Any]]]:
             },
         ],
     }
-
-@pytest.fixture
-def _mock_requests_get(monkeypatch: Any, mock_data: dict[str, list[dict[str, Any]]]) -> None:
-    """Monkeypatch the requests.get() method to return a mock response.
-
-    :param monkeypatch: The pytest monkeypatch fixture.
-    :param mock_data: The mock data fixture.
-    :return: None.
-    """
-    def mock_get(url: str) -> Any:
-        class MockResponse:
-            status_code = 200
-            def json(self) -> dict[str, list[dict[str, Any]]]:
-                return mock_data
-
-        return MockResponse()
-
-    monkeypatch.setattr("requests.get", mock_get)
-
-@pytest.fixture
-def api_mocker(_mock_requests_get: Any) -> SourceAPI:
-    """Instantiate the SourceAPI with monkey patch.
-
-    :param _mock_requests_get: The mock_requests_get fixture.
-    :return: SourceAPI instance.
-    """
-    return SourceAPI()
 
 @pytest.fixture(scope="session")
 def destination() -> Generator[DestinationPostgreSQL, None, None]:
