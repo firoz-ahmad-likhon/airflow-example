@@ -1,4 +1,3 @@
-import argparse
 import os
 import shutil
 from pathlib import Path
@@ -21,7 +20,7 @@ class GXInitiator:
     """
 
     # Define constants
-    PROJECT_DIR: Path = Path(os.environ['AIRFLOW_HOME']) / "quality"
+    PROJECT_DIR: Path = Path(os.environ['AIRFLOW_HOME']) / "dags/quality"
     GX_DIR: Path = PROJECT_DIR / "gx"
     SOURCE_NAME = "pandas"
     ASSET_NAME = "psr"
@@ -203,11 +202,3 @@ class GXInitiator:
             ],
             actions=cls.ACTIONS,
         ))
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Initialize Great Expectations context.")
-    parser.add_argument("--mode", choices=["recreate", "init"], default="init",
-                        help="Specify whether to recreate the project directory or leave it as is.")
-    args = parser.parse_args()
-
-    GXInitiator.initialize(mode=args.mode)

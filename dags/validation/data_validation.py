@@ -4,7 +4,8 @@ import great_expectations as gx
 import pendulum
 from great_expectations import RunIdentifier
 import pandas as pd
-from .validator import Validator
+from validation.validator import Validator
+from quality.gx_init import GXInitiator
 import logging
 
 class DataValidator(Validator):
@@ -21,7 +22,9 @@ class DataValidator(Validator):
             logging.error(f"Error while converting data to pandas dataframe: {e}")
 
         # Define the project directory
-        project_dir = os.path.join(os.environ['AIRFLOW_HOME'], "quality")
+        project_dir = os.path.join(os.environ['AIRFLOW_HOME'], "dags/quality")
+        # Initialize Great Expectations
+        GXInitiator.initialize("init")
         # Get the Great Expectations context
         self.context = gx.get_context(mode="file", project_root_dir=project_dir)
 

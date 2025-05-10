@@ -1,6 +1,7 @@
 .idea
+.venv
 .env
-__pycache__
-postgres-data/
 *.log
 gx
+logs
+__pycache__

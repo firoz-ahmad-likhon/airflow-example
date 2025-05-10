@@ -1,5 +1,5 @@
 from great_expectations.data_context import AbstractDataContext
-from gx_init import GXInitiator
+from quality.gx_init import GXInitiator
 
 
 class TestIntegrationGX:

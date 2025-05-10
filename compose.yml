@@ -10,7 +10,6 @@ x-airflow-common: &airflow-common
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./tests:/opt/airflow/tests
-    - ./quality:/opt/airflow/quality
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__LOAD_EXAMPLES: "False"
@@ -32,7 +31,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
 
   webserver:
@@ -59,7 +58,7 @@ services:
     container_name: airflow_init
     environment:
       <<: *airflow-common-env
-    command: ["bash", "-c", "python ./quality/gx_init.py --mode init && airflow db init && airflow users create --username admin --firstname admin --lastname admin --role Admin --email new_user@example.com --password admin"]
+    command: ["bash", "-c", "python ./dags/quality/gx_cli.py --mode init && airflow db init && airflow users create --username admin --firstname admin --lastname admin --role Admin --email new_user@example.com --password admin"]
     restart: "no"
 
 #  worker:
@@ -80,3 +79,6 @@ services:
       - postgres
     command: "airflow triggerer"
     restart: always
+
+volumes:
+  postgres-data:

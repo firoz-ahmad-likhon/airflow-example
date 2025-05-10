@@ -4,7 +4,7 @@ import pytest
 import great_expectations as gx
 from _pytest.tmpdir import TempPathFactory
 from great_expectations.data_context import AbstractDataContext
-from gx_init import GXInitiator
+from quality.gx_init import GXInitiator
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +23,7 @@ def gxi(tmp_path_factory : TempPathFactory) -> type[GXInitiator]:
     """
     # Use tmp_path_factory to create a session-scoped temporary directory
     session_tmp_path = tmp_path_factory.mktemp("session_quality")
-    GXInitiator.PROJECT_DIR = session_tmp_path / "quality"
+    GXInitiator.PROJECT_DIR = session_tmp_path / "dags/quality"
     GXInitiator.GX_DIR = GXInitiator.PROJECT_DIR / "gx"
 
     # Initialize Great Expectations
